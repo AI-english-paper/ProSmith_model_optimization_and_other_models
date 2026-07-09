@@ -10,6 +10,7 @@ Before running this workflow, make sure the following requirements are available
 -Jupyter Notebook or JupyterLab
 -Access to the ProSmith repository
 -Access to the FusionESP repository
+-Access to the required datasets and model files
 ``` 
 ## 1. Project Overview
 ### 1.1 Aim of this repository
