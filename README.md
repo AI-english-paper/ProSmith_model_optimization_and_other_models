@@ -13,6 +13,3 @@
    c. .md
    d. .cmd
    e. .exe
-
-whatever
-HALOO
