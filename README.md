@@ -1,4 +1,15 @@
 # ProSmith_model_optimization_and_other_models
+This repository was developed as part of PRJ61, a research project conducted within the Bachelor's programme in Chemistry at Hogeschool Rotterdam. The objective of the project was to investigate the application of artificial intelligence for enzyme-substrate interaction prediction by reproducing, optimizing, and extending the ProSmith workflow developed by Alexander Kroll. 
+
+During the project, several workflows were implemented and evaluated, including the original ProSmith pipeline, and expanded database workflow, a no-leakage workflow, and the FusionESP predictor. These workflows were used to investigate the effects of datase expansion, data leakage prevention, and alternative prediction models on overall model performance. 
+
+The workflows and scripts presented in this repository are the direct outcome of the PRJ61 project. They have been documented to enable reproducibility of the conducted experiments and to provide a practical guide for future users who wish to reproduce the results, extend the existing workflows, or apply the models to new datasets. 
+
+Thank you for using this repository. We hope it contributes to your research and makes it easier to reproduce and build upon our work. 
+
+Happy coding!
+
+Aurelia, Pedro, and Zeynep
 
 ## REQUIREMENTS
 ```text
