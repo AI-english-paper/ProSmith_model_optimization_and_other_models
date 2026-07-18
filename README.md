@@ -833,9 +833,6 @@ The following steps are reused from the standard ProSmith workflow:
 - preparing input files in the required ProSmith format
 - generating protein and SMILES embeddings
 - training the ProSmith transformer model
-- training the Gradient Boosting model
-- saving the generated prediction files
-- mapping predictions back to the corresponding test set entries
 
 The main difference is that the no-leakage workflow uses an alternate code that prevents model overestimation and keeps the datasets separate.
 ```
@@ -1054,8 +1051,16 @@ ESP_test_with_predictions.csv
 This file contains the original no-leakage test-set information together with the predicted model scores.
 
 ### 4.9 Expected output files
-
-
+After completing the no-leakage workflow, the following output files should be present:
+```text
+gb_all.json
+gb_all_cls.json
+gb_cls.json
+ensemble_weights.json
+y_test_pred.npy
+test_indices.npy
+ESP_test_with_predictions.csv
+```
 
 # 5. FusionESP predictor workflow
 
