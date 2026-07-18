@@ -52,7 +52,9 @@ No-leakage ProSmith workflow
 FusionESP predictor workflow
 ```
 The standard ProSmith workflow is used as the baseline workflow. 
+
 The no-leakage ProSmith workflow is an adjusted version of the ProSmith workflow in which the training, validation, and test data are kept separated to prevent data leakage. 
+
 The FusionESP predictor workflow is included as a separate prediction workflow.
 
 
