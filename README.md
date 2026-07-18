@@ -818,19 +818,244 @@ data/
 Successful generation of these files indicates that the expanded ProSmith workflow has been completed correctly and that the trained model and prediction outputs are available for downstream analysis and evaluation.
 
 ## 4. No-leakage ProSmith workflow
-
 ### 4.1 Purpose of the no-leakage workflow
+The purpose of the no-leakage workflow is to create an optimized ProSmith workflow in which data leakage between the training, validation, and test sets is prevented. In this workflow, the model is trained, validated, and tested using separately prepared datasets, so that the final test set remains independent from the data used during model development.
+
+This workflow was included because overlap between enzyme–substrate combinations across different data splits can lead to an overestimation of model performance. By keeping the train, validation, and test sets separated throughout the workflow, the final predictions give a more reliable indication of how the model performs on unseen enzyme–substrate combinations.
+
+The no-leakage workflow follows the same general ProSmith training structure as the standard workflow, but uses adjusted data handling, a no-leakage database split, and separate output files for the leakage-free setup.
+
 ### 4.2 Reused steps from the standard ProSmith workflow
+```text
+The following steps are reused from the standard ProSmith workflow:
+
+- using the same ProSmith environment
+- preparing input files in the required ProSmith format
+- generating protein and SMILES embeddings
+- training the ProSmith transformer model
+- training the Gradient Boosting model
+- saving the generated prediction files
+- mapping predictions back to the corresponding test set entries
+
+The main difference is that the no-leakage workflow uses an alternate code that prevents model overestimation and keeps the datasets separate.
+```
+
 ### 4.3 Required no-leakage files and folders
-### 4.4 Expanding the no-leakage database
-### 4.5 Creating the no-leakage train, validation, and test split
-### 4.6 Checking the no-leakage split
-### 4.7 Generating no-leakage embeddings
-### 4.8 Training the no-leakage ProSmith transformer model
-### 4.9 Training the no-leakage Gradient Boosting model
-### 4.10 Saving no-leakage predictions
-### 4.11 Mapping no-leakage predictions back to the test set
-### 4.12 Expected output files
+```text
+training.py
+training_GB.py
+Gradient_Boost_No_Leakage.zip
+```
+Gradient_Boost_No_Leakage.zip contains the no-leakage gradient boosting splits including the ensemble-weights. These files replace the standard ProSmith gradient boosting outputs. 
+
+Training.py file is used to train the no-leakge ProSmith transformer model. The training_GB.py file is used to train the no-leakage gradient boosting model.
+
+### 4.4 Applying the data leakage fix in `training_GB.py`
+
+The main no-leakage modification is applied in `training_GB.py`. In the original Gradient Boosting workflow, the validation set was partly reused when training the final Gradient Boosting models that were evaluated on the test set. 
+
+This is not desired, because the validation set should only be used for model selection and should not become part of the final training data used for test-set predictions.
+
+In the no-leakage workflow, the validation set is only used for:
+
+- hyperparameter selection
+- ensemble weight selection
+
+The validation set is not added back into the training data when generating the final predictions on the test set.
+
+Open the following file:
+
+```text
+training_GB.py
+```
+#### 4.4.1 Modify the first Gradient Boosting model
+Find the following code:
+```bash
+bst_all_test, y_test_pred_all = get_predictions(
+    param = trials.argmin,
+    dM_train = dtrain_val,
+    dM_val = dtest
+)
+```
+Replace it with:
+```bash
+bst_all_test, y_test_pred_all = get_predictions(
+    param = trials.argmin,
+    dM_train = dtrain,
+    dM_val = dtest
+)
+```
+This prevents the combined train-validation matrix from being used for the final test-set prediction step.
+
+#### 4.4.1 Modify the second Gradient Boosting model
+Find the following code:
+```bash
+bst_all_cls_test, y_test_pred_all_cls = get_predictions(
+    param = trials.argmin,
+    dM_train = dtrain_val_all_cls,
+    dM_val = dtest_all_cls
+)
+```
+Replace it with:
+```bash
+bst_all_cls_test, y_test_pred_all_cls = get_predictions(
+    param = trials.argmin,
+    dM_train = dtrain_all_cls,
+    dM_val = dtest_all_cls
+)
+```
+This applies the same no-leakage correction to the Gradient Boosting model that uses the ESM1b, ChemBERTa2, and cls-token features.
+
+#### 4.4.3 Modify the third Gradient Boosting model
+Find the following code:
+```bash
+bst_cls_test, y_test_pred_cls = get_predictions(
+    param = trials.argmin,
+    dM_train = dtrain_val_cls,
+    dM_val = dtest_cls
+)
+```
+Replace it with:
+```bash
+bst_cls_test, y_test_pred_cls = get_predictions(
+    param = trials.argmin,
+    dM_train = dtrain_cls,
+    dM_val = dtest_cls
+)
+```
+This applies the no-leakage correction to the cls-token-only Gradient Boosting model.
+
+### 4.5 Checking that the no-leakage correction is applied correctly
+After editing `training_GB.py`, check that the old train-validation objects are no longer used for the final test-set predictions.
+
+The following objects may still exist in the script:
+
+```text
+dtrain_val
+dtrain_val_all_cls
+dtrain_val_cls
+```
+However, these objects should not be used when generating the final test-set predictions for:
+```text
+bst_all_test
+bst_all_cls_test
+bst_cls_test
+```
+The final test-set predictions should use only the training-data objects:
+```text
+dtrain
+dtrain_all_cls
+dtrain_cls
+```
+This ensures that the validation set remains separate from the final model training step used for test-set prediction.
+
+### 4.6 Running the no-leakage Gradient Boosting workflow
+After applying the no-leakage correction, run the Gradient Boosting workflow using separate output folders. 
+
+This prevents the original and no-leakage results from being mixed.
+```bash
+python code/training/training_GB.py \
+    --train_dir data/training_data/ESP/train_val/ESP_train_df.csv \
+    --val_dir data/training_data/ESP/train_val/ESP_val_df.csv \
+    --test_dir data/training_data/ESP/train_val/ESP_test_df.csv \
+    --pretrained_model data/training_data/ESP/saved_model/ESP_2gpus_bs48_1e-05_layers6.txt.pkl \
+    --embed_path data/training_data/ESP/embeddings \
+    --save_pred_path data/training_data/ESP/saved_predictions_no_leakage \
+    --save_gb_model_path data/training_data/ESP/saved_gb_model_no_leakage \
+    --num_hidden_layers 6 \
+    --num_iter 500 \
+    --log_name ESP_no_leakage \
+    --binary_task True
+```
+The important difference from the standard workflow is that the no-leakage output is saved in separate folders:
+```text
+saved_predictions_no_leakage
+saved_gb_model_no_leakage
+```
+### 4.7 Checking the no-leakage output files
+After running the no-leakage Gradient Boosting workflow, check whether the no-leakage Gradient Boosting models were saved correctly.
+
+Run:
+```bash
+ls data/training_data/ESP/saved_gb_model_no_leakage/
+```
+The expected output is:
+```text
+gb_all.json
+gb_all_cls.json
+gb_cls.json
+ensemble_weights.json
+```
+Next, check whether the no-leakage prediction files were saved:
+```bash
+ls data/training_data/ESP/saved_predictions_no_leakage/
+```
+The expected output is:
+```text
+y_test_pred.npy
+test_indices.npy
+```
+The y_test_pred.npy file contains the predicted scores for the test set. 
+
+The test_indices.npy file contains the row indices needed to link the predictions back to the correct test-set entries.
+
+### 4.8 Mapping no-leakage predictions back to the test set
+After running the no-leakage Gradient Boosting workflow, the predictions are stored separately from the original test set. 
+
+To make the output easier to interpret, the predictions should be mapped back to the corresponding rows in the test file.
+
+Run the following code in a Jupyter Notebook or Python script:
+
+```python
+import numpy as np
+import pandas as pd
+from os.path import join
+
+pred_dir = "data/training_data/ESP/saved_predictions_no_leakage"
+test_path = "data/training_data/ESP/train_val/ESP_test_df.csv"
+out_path = join(pred_dir, "ESP_test_with_predictions.csv")
+
+y_pred = np.load(
+    join(
+        pred_dir,
+        "y_test_pred.npy"
+    )
+)
+
+y_pred_ind = np.load(
+    join(
+        pred_dir,
+        "test_indices.npy"
+    )
+)
+
+test_df = pd.read_csv(
+    test_path
+)
+
+test_df["y_pred"] = np.nan
+
+for k, ind in enumerate(y_pred_ind):
+    test_df.loc[int(ind), "y_pred"] = y_pred[k]
+
+test_df.to_csv(
+    out_path,
+    index=False
+)
+
+print("Saved:", out_path)
+print("Predictions mapped:", test_df["y_pred"].notna().sum())
+print("Total rows:", len(test_df))
+```
+This creates the final mapped prediction file:
+```text
+ESP_test_with_predictions.csv
+```
+This file contains the original no-leakage test-set information together with the predicted model scores.
+
+### 4.9 Expected output files
+
+
 
 # 5. FusionESP predictor workflow
 
