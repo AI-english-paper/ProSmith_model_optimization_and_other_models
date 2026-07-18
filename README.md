@@ -164,81 +164,9 @@ Clone the original ProSmith repository and download the accompanying dataset bef
 
 ## 3.3 Standard ProSmith database workflow
 
-### 3.3.1 Preparing the original ProSmith database
+After completing chapter 2, follow these steps
 
-Navigate to the original ProSmith GitHub repository:
-
-```text
-https://github.com/AlexanderKroll/ProSmith
-```
-
-Clone the repository and download the associated dataset from Zenodo.
-
-If working on the SURF supercomputer, open the JupyterLab interface and clone the repository using the **Clone a Repository** option. Upload the downloaded ZIP archive containing the dataset into the ProSmith directory.
-
-Extract the dataset using:
-
-```bash
-unzip <dataset_name>.zip
-```
-
-After extraction, rename the generated folder `data 2` to:
-
-```text
-data
-```
-
-The repository structure should resemble the following:
-
-```text
-├── code
-├── data
-├── LICENSE.md
-└── README.md
-```
-
-Next, create a new Jupyter notebook by selecting:
-
-```text
-Notebook → Python 3 (ipykernel)
-```
-
-Install Micromamba by executing the following commands one at a time:
-
-```bash
-wget https://github.com/mamba-org/micromamba-releases/releases/download/2.1.0-0/micromamba-linux-64
-chmod +x micromamba-linux-64
-mkdir -p ~/bin
-mv micromamba-linux-64 ~/bin/micromamba
-echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
-~/bin/micromamba --version
-```
-
-Create the ProSmith environment:
-
-```bash
-~/bin/micromamba env create -f environment.yml
-```
-
-When prompted, type `Y` and execute:
-
-```bash
-eval "$(micromamba shell hook --shell bash)"
-micromamba activate prosmith
-pip install -r requirements.txt
-micromamba install "mkl=2024.0" -c conda-forge
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-```
-
-For subsequent sessions, reactivate the environment using:
-
-```bash
-eval "$(micromamba shell hook --shell bash)"
-micromamba activate prosmith
-```
-
-### 3.3.2 Creating train, validation, and test files
+### 3.3.1 Creating train, validation, and test files
 
 The original ProSmith repository already contains predefined training, validation, and test datasets.
 
@@ -255,7 +183,7 @@ data/training_data/ESP/train_val/
 These datasets are used throughout the remainder of the baseline training workflow.
 
 
-### 3.3.3 Generating protein and SMILES embeddings
+### 3.3.2 Generating protein and SMILES embeddings
 
 Before training the ProSmith model, embeddings must be generated for all protein sequences and substrate SMILES strings contained in the training and validation datasets.
 
@@ -282,7 +210,7 @@ The generated embeddings are stored in:
 data/training_data/ESP/embeddings/
 ```
 
-### 3.3.4 Training the ProSmith transformer model
+### 3.3.3 Training the ProSmith transformer model
 
 Once all embeddings have been generated, the ProSmith transformer model can be trained using the original enzyme–substrate database.
 
@@ -311,7 +239,7 @@ The trained model is saved in:
 data/training_data/ESP/saved_model/
 ```
 
-### 3.3.5 Training the Gradient Boosting model
+### 3.3.4 Training the Gradient Boosting model
 
 Following transformer training, train the Gradient Boosting classifier using the generated embeddings together with the transformer predictions.
 
@@ -349,7 +277,7 @@ After successful execution, all prediction files are stored in:
 data/training_data/ESP/saved_predictions/
 ```
 
-### 3.3.6 Mapping predictions back to the test set
+### 3.3.5 Mapping predictions back to the test set
 
 The final step consists of mapping the generated predictions back to the original test dataset.
 
@@ -395,7 +323,7 @@ data/training_data/ESP/saved_predictions/ESP_test_with_predictions.csv
 
 This file enables direct comparison between the original dataset and the predicted interaction labels.
 
-### 3.3.7 Expected output files
+### 3.3.6 Expected output files
 
 After successfully completing the baseline workflow, the repository should contain the following output:
 
@@ -697,7 +625,7 @@ data/training_data/ESP/saved_model/
 ```
 
 
-### 3.4.5 Training the Gradient Boosting model
+### 3.4.5 Preparing for: Training the Gradient Boosting model
 
 Before training the Gradient Boosting classifier, the test dataset should be cleaned using the same embedding validation procedure that was applied to the training and validation datasets.
 
@@ -761,6 +689,8 @@ The ProSmith model has now been successfully trained using the reproduced baseli
 
 After completing the training in step 3.4.5, you can continue with Chapter 4, where the entire pipeline is repeated using a leakage-free gradient boosting to obtain a more robust and unbiased evaluation of the model.
 
+### 3.4.6 Preparing for: Training the Gradient Boosting model
+
 Next, train the Gradient Boosting classifier using:
 
 ```bash
@@ -786,7 +716,7 @@ data/training_data/ESP/saved_predictions/
 ```
 
 
-### 3.4.6 Mapping predictions back to the test set
+### 3.4.7 Mapping predictions back to the test set
 
 The final step consists of mapping the generated predictions back to the original test dataset.
 
@@ -833,7 +763,7 @@ data/training_data/ESP/saved_predictions/ESP_test_with_predictions.csv
 This file enables direct comparison between the original dataset and the predicted interaction labels.
 
 
-### 3.4.7 Expected output files
+### 3.4.8 Expected output files
 
 After successfully completing the expanded database workflow, the repository should contain the following files and directories:
 
