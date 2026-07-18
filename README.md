@@ -23,10 +23,47 @@ Before running this workflow, make sure the following requirements are available
 -Access to the required datasets and model files
 ``` 
 ## 1. Project Overview
+
+This repository contains the combined reproducible workflow used for the ProSmith model optimization project. The repository brings together the shared environment setup, the standard ProSmith workflow, the no-leakage ProSmith workflow, and the FusionESP predictor workflow.
+
+The goal of this repository is not to duplicate all individual project repositories in full, but to provide a clear and structured workflow that allows readers to reproduce the main steps used in this project.
+
 ### 1.1 Aim of this repository
+
+The aim of this repository is to provide a summarized and reproducible workflow for setting up, modifying, and running the models used in this project.
+
+This includes:
+
+- setting up the shared ProSmith environment
+- reproducing the standard ProSmith workflow
+- applying the no-leakage modifications to the ProSmith workflow
+- running the FusionESP predictor workflow
+- generating the required output files for downstream analysis
+
+The repository is intended to help readers understand how the different workflows were prepared and how the required files, scripts, and outputs are connected.
+
 ### 1.2 Models included in this repository
-### 1.3 General workflow order
-### 1.4 Repository structure
+
+This repository contains workflows for the following models:
+
+```text
+Standard ProSmith workflow
+No-leakage ProSmith workflow
+FusionESP predictor workflow
+```
+The standard ProSmith workflow is used as the baseline workflow. 
+The no-leakage ProSmith workflow is an adjusted version of the ProSmith workflow in which the training, validation, and test data are kept separated to prevent data leakage. 
+The FusionESP predictor workflow is included as a separate prediction workflow.
+
+
+### 1.3 Repository structure
+```text
+1. Project overview
+2. Shared environment setup
+3. Standard ProSmith database workflow
+4. No-leakage ProSmith workflow
+5. FusionESP predictor workflow
+```
 
 ## 2. Shared environment setup
 ### 2.1 Prepare all files
