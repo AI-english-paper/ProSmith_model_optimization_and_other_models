@@ -118,15 +118,320 @@ Whenever you start a new session on the SURF supercomputer, reactivate the envir
 #### 3.3.6 Mapping predictions back to the test set
 #### 3.3.7 Expected output files
 
-### 3.4 Expanded ProSmith database workflow
-#### 3.4.1 Expanding the ProSmith database
-#### 3.4.2 Preprocessing the expanded database
-#### 3.4.3 Creating train, validation, and test files
-#### 3.4.4 Generating protein and SMILES embeddings
-#### 3.4.5 Training the ProSmith transformer model
-#### 3.4.6 Training the Gradient Boosting model
-#### 3.4.7 Mapping predictions back to the test set
-#### 3.4.8 Expected output files
+## 3.4 Expanded ProSmith database workflow
+
+### 3.4.1 Expanding the ProSmith database
+
+To train ProSmith using an expanded enzyme–substrate database, several modifications to the original repository are required. These modifications enable the preprocessing and training pipeline to process the additional data correctly.
+
+First, replace the original preprocessing script located at:
+
+```text
+code/preprocessing/preprocessing.py
+```
+
+with the provided `preprocessing_expandeddatabase.py` file.
+
+Next, replace:
+
+```text
+code/training/utils/datautils.py
+```
+
+with `datautils_expandeddatabase.py`.
+
+Finally, replace:
+
+```text
+code/training/training_GB.py
+```
+
+with `training_GB_expandeddatabase.py`.
+
+After replacing each file, save the modifications before proceeding. Once these files have been updated, the ProSmith pipeline is configured to process the expanded enzyme–substrate database.
+
+
+### 3.4.2 Preprocessing the expanded database
+
+The original ProSmith datasets must be replaced by the expanded datasets before preprocessing can begin.
+
+Navigate to:
+
+```text
+data/training_data/ESP/train_val
+```
+
+Rename the original datasets to preserve a backup:
+
+```text
+ESP_train_df.csv → ESP_train_df_old.csv
+ESP_val_df.csv   → ESP_val_df_old.csv
+ESP_test_df.csv  → ESP_test_df_old.csv
+```
+
+Next, copy the expanded datasets provided in this repository into the same directory.
+
+#### Merging the training dataset
+
+To retain all previously available training samples, the expanded training dataset should be merged with the original ProSmith training dataset.
+
+This can be performed using spreadsheet software such as Microsoft Excel by appending the rows of the expanded dataset below the original training dataset.
+
+Save the merged dataset as:
+
+```text
+ESP_train_df.csv
+```
+
+#### Converting the CSV format
+
+The expanded datasets are distributed as semicolon-separated (`;`) CSV files, whereas the ProSmith pipeline expects comma-separated (`,`) CSV files.
+
+Execute the following script to convert the datasets:
+
+```bash
+python - <<'PY'
+...
+PY
+```
+
+After the conversion has completed successfully, execute the cleaning script below to remove incomplete or invalid records:
+
+```bash
+python - <<'PY'
+...
+PY
+```
+
+This script performs several quality-control steps, including:
+
+- Converting output labels to integer values.
+- Removing rows containing missing labels.
+- Removing incomplete protein or substrate entries.
+- Removing rows with missing identifiers.
+- Generating cleaned datasets for downstream processing.
+
+After successful execution, the cleaned datasets are ready for embedding generation.
+
+
+### 3.4.3 Creating train, validation, and test files
+
+Before model training, embeddings must be generated for all protein sequences and SMILES strings present in the cleaned datasets.
+
+Run the preprocessing pipeline using:
+
+```bash
+python code/preprocessing/preprocessing.py \
+  --train_val_path data/training_data/ESP/train_val \
+  --outpath data/training_data/ESP/embeddings \
+  --smiles_emb_no 2000 \
+  --prot_emb_no 2000
+```
+
+During preprocessing, the pipeline performs several automated operations:
+
+- Validation of the input datasets.
+- Preprocessing of protein sequences and SMILES strings.
+- Generation of protein embeddings.
+- Generation of molecular (SMILES) embeddings.
+- Storage of all generated embeddings for subsequent model training.
+
+Upon successful completion, newly generated embedding files will be available in:
+
+```text
+data/training_data/ESP/embeddings/
+```
+
+These embeddings serve as the input for both the ProSmith transformer model and the Gradient Boosting classifier.
+
+### 3.4.4 Generating protein and SMILES embeddings
+
+After the train, validation, and test datasets have been prepared, molecular and protein embeddings must be generated before model training can begin.
+
+Execute the preprocessing pipeline using the following command:
+
+```bash
+python code/preprocessing/preprocessing.py \
+  --train_val_path data/training_data/ESP/train_val \
+  --outpath data/training_data/ESP/embeddings \
+  --smiles_emb_no 2000 \
+  --prot_emb_no 2000
+```
+
+The preprocessing pipeline automatically performs the following tasks:
+
+- Reads the training and validation datasets.
+- Generates transformer-based embeddings for all protein sequences.
+- Generates ChemBERTa embeddings for all SMILES strings.
+- Stores the generated embeddings for subsequent model training.
+
+After successful execution, the generated embeddings can be found in:
+
+```text
+data/training_data/ESP/embeddings/
+```
+
+Before continuing with model training, it is recommended to verify that embeddings have been generated for all entries in the training and validation datasets.
+
+To remove samples without corresponding embeddings, execute the following cleanup script:
+
+```bash
+python -u - <<'PY'
+...
+PY
+```
+
+This script compares the generated embeddings with the datasets and removes samples for which either the protein or SMILES embedding is unavailable. The resulting files are saved as:
+
+```text
+ESP_train_df_embedclean.csv
+ESP_val_df_embedclean.csv
+```
+
+These cleaned datasets are subsequently used for model training.
+
+
+### 3.4.5 Training the ProSmith transformer model
+
+Once the embedding generation has been completed, the ProSmith transformer model can be trained using the expanded enzyme–substrate database.
+
+Execute the following command:
+
+```bash
+python code/training/training.py \
+  --train_dir data/training_data/ESP/train_val/ESP_train_df_embedclean.csv \
+  --val_dir data/training_data/ESP/train_val/ESP_val_df_embedclean.csv \
+  --save_model_path data/training_data/ESP/saved_model \
+  --embed_path data/training_data/ESP/embeddings \
+  --pretrained_model data/training_data/BindingDB/saved_model/pretraining_IC50_6gpus_bs144_1.5e-05_layers6.txt.pkl \
+  --learning_rate 1e-5 \
+  --num_hidden_layers 6 \
+  --batch_size 24 \
+  --binary_task True \
+  --log_name ESP_embedclean \
+  --num_train_epochs 100 \
+  --port 29621 2>&1 | tee ESP_embedclean_training.log
+```
+
+Depending on the available computational resources, training may require several hours or multiple days.
+
+The training process can be monitored using:
+
+```bash
+watch -n 2 nvidia-smi
+```
+
+to monitor GPU utilization, and
+
+```bash
+htop
+```
+
+to monitor CPU usage.
+
+During training, ProSmith automatically generates log files that record the training progress and any potential errors. These logs are particularly useful when long-running training jobs are executed on the SURF supercomputer.
+
+Upon completion, the trained transformer model is stored in:
+
+```text
+data/training_data/ESP/saved_model/
+```
+
+
+### 3.4.6 Training the Gradient Boosting model
+
+Before training the Gradient Boosting classifier, the test dataset should be cleaned using the same embedding validation procedure that was applied to the training and validation datasets.
+
+Execute the cleaning script:
+
+```bash
+python -u - <<'PY'
+...
+PY
+```
+
+This script removes test samples without valid protein or SMILES embeddings and creates an embedding-compatible test dataset.
+
+Next, train the Gradient Boosting classifier using:
+
+```bash
+python -u code/training/training_GB.py \
+  --train_dir data/training_data/ESP/train_val/ESP_train_df_embedclean.csv \
+  --val_dir data/training_data/ESP/train_val/ESP_val_df_embedclean.csv \
+  --test_dir data/training_data/ESP/train_val/ESP_test_df_embedclean.csv \
+  --pretrained_model data/training_data/ESP/saved_model_rerun_100ep/best_model.pkl \
+  --embed_path data/training_data/ESP/embeddings \
+  --save_pred_path data/training_data/ESP/saved_predictions \
+  --num_hidden_layers 6 \
+  --num_iter 500 \
+  --log_name ESP_GB_embedclean \
+  --binary_task True 2>&1 | tee ESP_GB_embedclean.log
+```
+
+The Gradient Boosting classifier combines the learned transformer representations with the generated embeddings to improve predictive performance.
+
+After successful completion, all prediction files are stored in:
+
+```text
+data/training_data/ESP/saved_predictions/
+```
+
+
+### 3.4.7 Mapping predictions back to the test set
+
+The final step consists of mapping the generated predictions back to the original test dataset.
+
+Execute the following script:
+
+```bash
+python - <<'PY'
+...
+PY
+```
+
+The script performs the following operations:
+
+- Loads the predicted interaction scores.
+- Retrieves the original test dataset.
+- Maps each prediction to its corresponding sample.
+- Creates a new dataset containing both the original data and the model predictions.
+
+The resulting file is saved as:
+
+```text
+data/training_data/ESP/saved_predictions/ESP_test_with_predictions.csv
+```
+
+This file enables direct comparison between the original dataset and the predicted interaction labels.
+
+
+### 3.4.8 Expected output files
+
+After successfully completing the expanded database workflow, the repository should contain the following files and directories:
+
+```text
+data/
+└── training_data/
+    └── ESP/
+        ├── embeddings/
+        │   ├── Protein/
+        │   └── SMILES/
+        │
+        ├── saved_model/
+        │   └── best_model.pkl
+        │
+        ├── saved_predictions/
+        │   ├── y_test_pred.npy
+        │   ├── test_indices.npy
+        │   └── ESP_test_with_predictions.csv
+        │
+        └── train_val/
+            ├── ESP_train_df_embedclean.csv
+            ├── ESP_val_df_embedclean.csv
+            └── ESP_test_df_embedclean.csv
+```
+
+Successful generation of these files indicates that the expanded ProSmith workflow has been completed correctly and that the trained model and prediction outputs are available for downstream analysis and evaluation.
 
 ## 4. No-leakage ProSmith workflow
 
