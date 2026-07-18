@@ -251,37 +251,7 @@ This script performs several quality-control steps, including:
 After successful execution, the cleaned datasets are ready for embedding generation.
 
 
-### 3.4.3 Creating train, validation, and test files
-
-Before model training, embeddings must be generated for all protein sequences and SMILES strings present in the cleaned datasets.
-
-Run the preprocessing pipeline using:
-
-```bash
-python code/preprocessing/preprocessing.py \
-  --train_val_path data/training_data/ESP/train_val \
-  --outpath data/training_data/ESP/embeddings \
-  --smiles_emb_no 2000 \
-  --prot_emb_no 2000
-```
-
-During preprocessing, the pipeline performs several automated operations:
-
-- Validation of the input datasets.
-- Preprocessing of protein sequences and SMILES strings.
-- Generation of protein embeddings.
-- Generation of molecular (SMILES) embeddings.
-- Storage of all generated embeddings for subsequent model training.
-
-Upon successful completion, newly generated embedding files will be available in:
-
-```text
-data/training_data/ESP/embeddings/
-```
-
-These embeddings serve as the input for both the ProSmith transformer model and the Gradient Boosting classifier.
-
-### 3.4.4 Generating protein and SMILES embeddings
+### 3.4.3 Generating protein and SMILES embeddings
 
 After the train, validation, and test datasets have been prepared, molecular and protein embeddings must be generated before model training can begin.
 
@@ -375,7 +345,7 @@ ESP_val_df_embedclean.csv
 These cleaned datasets are subsequently used for model training.
 
 
-### 3.4.5 Training the ProSmith transformer model
+### 3.4.4 Training the ProSmith transformer model
 
 Once the embedding generation has been completed, the ProSmith transformer model can be trained using the expanded enzyme–substrate database.
 
@@ -422,7 +392,7 @@ data/training_data/ESP/saved_model/
 ```
 
 
-### 3.4.6 Training the Gradient Boosting model
+### 3.4.5 Training the Gradient Boosting model
 
 Before training the Gradient Boosting classifier, the test dataset should be cleaned using the same embedding validation procedure that was applied to the training and validation datasets.
 
@@ -506,7 +476,7 @@ data/training_data/ESP/saved_predictions/
 ```
 
 
-### 3.4.7 Mapping predictions back to the test set
+### 3.4.6 Mapping predictions back to the test set
 
 The final step consists of mapping the generated predictions back to the original test dataset.
 
@@ -553,7 +523,7 @@ data/training_data/ESP/saved_predictions/ESP_test_with_predictions.csv
 This file enables direct comparison between the original dataset and the predicted interaction labels.
 
 
-### 3.4.8 Expected output files
+### 3.4.7 Expected output files
 
 After successfully completing the expanded database workflow, the repository should contain the following files and directories:
 
