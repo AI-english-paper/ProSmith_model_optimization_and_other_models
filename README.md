@@ -26,7 +26,7 @@ https://github.com/AlexanderKroll/ProSmith
 
 Download the dataset from Zenodo. 
 
-#### 2.2 Working on the SURF supercomputer
+### 2.2 Working on the SURF supercomputer
 Make sure you are in the correct directory. Then click the third icon in the left sidebar.
 
 Under Clone a Repository, enter the URL of Kroll's GitHub repository. Upload the downloaded ZIP file into the ProSmith folder. 
@@ -93,12 +93,6 @@ Whenever you start a new session on the SURF supercomputer, reactivate the envir
 
 `micromamba activate prosmith`
 
-## Kan dit weg pelo? (kopjes tot 3)
-### 2.5 Creating or activating the environment
-### 2.2 Installing dependencies
-### 2.3 Navigating to the project repositories
-### 2.4 Checking required datasets and model files
-### 2.5 Testing the environment (you momma)
 
 ## 3. ProSmith workflow
 
