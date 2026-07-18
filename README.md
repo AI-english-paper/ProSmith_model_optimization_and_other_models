@@ -100,19 +100,29 @@ Whenever you start a new session on the SURF supercomputer, reactivate the envir
 ### 2.4 Checking required datasets and model files
 ### 2.5 Testing the environment (you momma)
 
-## 3. Standard ProSmith workflow
+## 3. ProSmith workflow
 
-### 3.1 Purpose of the standard ProSmith workflow
+### 3.1 Purpose
 ### 3.2 Required ProSmith files and folders
-### 3.3 Preparing the original ProSmith database
-### 3.4 Expanding the ProSmith database
-### 3.5 Preprocessing the expanded database
-### 3.6 Creating train, validation, and test files
-### 3.7 Generating protein and SMILES embeddings
-### 3.8 Training the ProSmith transformer model
-### 3.9 Training the Gradient Boosting model
-### 3.10 Mapping predictions back to the test set
-### 3.11 Expected output files
+
+### 3.3 Standard ProSmith database workflow
+#### 3.3.1 Preparing the original ProSmith database
+#### 3.3.2 Creating train, validation, and test files
+#### 3.3.3 Generating protein and SMILES embeddings
+#### 3.3.4 Training the ProSmith transformer model
+#### 3.3.5 Training the Gradient Boosting model
+#### 3.3.6 Mapping predictions back to the test set
+#### 3.3.7 Expected output files
+
+### 3.4 Expanded ProSmith database workflow
+#### 3.4.1 Expanding the ProSmith database
+#### 3.4.2 Preprocessing the expanded database
+#### 3.4.3 Creating train, validation, and test files
+#### 3.4.4 Generating protein and SMILES embeddings
+#### 3.4.5 Training the ProSmith transformer model
+#### 3.4.6 Training the Gradient Boosting model
+#### 3.4.7 Mapping predictions back to the test set
+#### 3.4.8 Expected output files
 
 ## 4. No-leakage ProSmith workflow
 
