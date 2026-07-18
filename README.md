@@ -191,7 +191,18 @@ Execute the following script to convert the datasets:
 
 ```bash
 python - <<'PY'
-...
+import pandas as pd
+
+files = [
+    ("data/training_data/ESP/train_val/ESP_train_df.csv", "data/training_data/ESP/train_val/ESP_train_df_comma.csv"),
+    ("data/training_data/ESP/train_val/ESP_val_df.csv", "data/training_data/ESP/train_val/ESP_val_df_comma.csv"),
+]
+
+for src, dst in files:
+    df = pd.read_csv(src, sep=';')
+    print(src, "->", dst)
+    print(df.columns.tolist())
+    df.to_csv(dst, index=False)
 PY
 ```
 
@@ -199,7 +210,33 @@ After the conversion has completed successfully, execute the cleaning script bel
 
 ```bash
 python - <<'PY'
-...
+import pandas as pd
+
+pairs = [
+    ("data/training_data/ESP/train_val/ESP_train_df_comma.csv",
+     "data/training_data/ESP/train_val/ESP_train_df_clean.csv"),
+    ("data/training_data/ESP/train_val/ESP_val_df_comma.csv",
+     "data/training_data/ESP/train_val/ESP_val_df_clean.csv"),
+]
+
+for src, dst in pairs:
+    df = pd.read_csv(src)
+    df["output"] = pd.to_numeric(df["output"], errors="coerce")
+
+    bad = df[df["output"].isna()]
+    print("\n", src)
+    print("Rows:", len(df))
+    print("Bad output rows:", len(bad))
+    if len(bad):
+        print(bad[["Uniprot ID", "molecule ID", "output", "SMILES"]].head(20))
+
+    df = df.dropna(subset=["output", "SMILES", "Protein sequence", "Uniprot ID", "molecule ID"])
+    df["output"] = df["output"].astype(int)
+
+    print("Clean rows:", len(df))
+    print("Output values:", sorted(df["output"].unique()))
+    df.to_csv(dst, index=False)
+    print("Saved:", dst)
 PY
 ```
 
@@ -277,7 +314,54 @@ To remove samples without corresponding embeddings, execute the following cleanu
 
 ```bash
 python -u - <<'PY'
-...
+import pickle as pkl
+import torch
+import pandas as pd
+from pathlib import Path
+
+embed_dir = Path("data/training_data/ESP/embeddings")
+
+smiles = set()
+smiles_files = sorted((embed_dir / "SMILES").glob("*"))
+print("Loading SMILES files:", len(smiles_files), flush=True)
+
+for f in smiles_files:
+    print("Loading", f, flush=True)
+    with open(f, "rb") as handle:
+        d = pkl.load(handle)
+    smiles.update(d.keys())
+    print("  SMILES so far:", len(smiles), flush=True)
+
+proteins = set()
+protein_files = sorted((embed_dir / "Protein").glob("*.pt"))
+print("Loading Protein files:", len(protein_files), flush=True)
+
+for f in protein_files:
+    print("Loading", f, flush=True)
+    d = torch.load(f, map_location="cpu")
+    proteins.update(d.keys())
+    print("  Proteins so far:", len(proteins), flush=True)
+    del d
+
+print("SMILES embeddings:", len(smiles), flush=True)
+print("Protein embeddings:", len(proteins), flush=True)
+
+for src, dst in [
+    ("data/training_data/ESP/train_val/ESP_train_df_clean.csv",
+     "data/training_data/ESP/train_val/ESP_train_df_embedclean.csv"),
+    ("data/training_data/ESP/train_val/ESP_val_df_clean.csv",
+     "data/training_data/ESP/train_val/ESP_val_df_embedclean.csv"),
+]:
+    print("Filtering", src, flush=True)
+    df = pd.read_csv(src)
+    before = len(df)
+
+    df["Protein sequence"] = df["Protein sequence"].astype(str).str[:1018]
+    df = df[df["SMILES"].isin(smiles)]
+    df = df[df["Protein sequence"].isin(proteins)]
+
+    df.to_csv(dst, index=False)
+    print(src, "->", dst, before, "to", len(df), flush=True)
 PY
 ```
 
@@ -346,7 +430,52 @@ Execute the cleaning script:
 
 ```bash
 python -u - <<'PY'
-...
+import pickle as pkl
+import torch
+import pandas as pd
+from pathlib import Path
+
+test_src = "data/training_data/ESP/train_val/ESP_test_df.csv"
+test_clean = "data/training_data/ESP/train_val/ESP_test_df_clean.csv"
+test_embedclean = "data/training_data/ESP/train_val/ESP_test_df_embedclean.csv"
+embed_dir = Path("data/training_data/ESP/embeddings")
+
+# Read test CSV. Use sep=";" if the file is semicolon-separated.
+try:
+    df = pd.read_csv(test_src)
+    if len(df.columns) == 1 and ";" in df.columns[0]:
+        df = pd.read_csv(test_src, sep=";")
+except Exception:
+    df = pd.read_csv(test_src, sep=";")
+
+df["output"] = pd.to_numeric(df["output"], errors="coerce")
+before = len(df)
+
+df = df.dropna(subset=["output", "SMILES", "Protein sequence", "Uniprot ID", "molecule ID"])
+df["output"] = df["output"].astype(int)
+df.to_csv(test_clean, index=False)
+
+print("Clean:", test_src, "->", test_clean, before, "to", len(df), flush=True)
+
+smiles = set()
+for f in sorted((embed_dir / "SMILES").glob("*")):
+    with open(f, "rb") as handle:
+        smiles.update(pkl.load(handle).keys())
+
+proteins = set()
+for f in sorted((embed_dir / "Protein").glob("*.pt")):
+    d = torch.load(f, map_location="cpu")
+    proteins.update(d.keys())
+    del d
+
+before_embed = len(df)
+df["Protein sequence"] = df["Protein sequence"].astype(str).str[:1018]
+df = df[df["SMILES"].isin(smiles)]
+df = df[df["Protein sequence"].isin(proteins)]
+df.to_csv(test_embedclean, index=False)
+
+print("Embedclean:", test_clean, "->", test_embedclean, before_embed, "to", len(df), flush=True)
+print("Saved:", test_embedclean, flush=True)
 PY
 ```
 
@@ -385,7 +514,26 @@ Execute the following script:
 
 ```bash
 python - <<'PY'
-...
+import numpy as np
+import pandas as pd
+from os.path import join
+
+pred_dir = "data/training_data/ESP/saved_predictions"
+test_path = "data/training_data/ESP/train_val/ESP_test_df.csv"
+out_path = join(pred_dir, "ESP_test_with_predictions.csv")
+
+y_pred = np.load(join(pred_dir, "y_test_pred.npy"))
+y_pred_ind = np.load(join(pred_dir, "test_indices.npy"))
+test_df = pd.read_csv(test_path, sep=None, engine="python")
+
+test_df["y_pred"] = np.nan
+for k, ind in enumerate(y_pred_ind):
+    test_df.loc[ind, "y_pred"] = y_pred[k]
+
+test_df.to_csv(out_path, index=False)
+print("Saved:", out_path)
+print("Predictions mapped:", test_df["y_pred"].notna().sum())
+print("Total rows:", len(test_df))
 PY
 ```
 
