@@ -107,16 +107,282 @@ Whenever you start a new session on the SURF supercomputer, reactivate the envir
 ## 3. ProSmith workflow
 
 ### 3.1 Purpose
+
+The purpose of this workflow is to reproduce the original ProSmith training pipeline as described by Kroll *et al.* using the original enzyme–substrate database. The workflow has been adapted for execution on the SURF supercomputer while preserving the original training procedure. Following this workflow enables users to reproduce the baseline ProSmith model, which serves as a reference for evaluating the optimized workflows presented in subsequent chapters.
+
+
 ### 3.2 Required ProSmith files and folders
 
-### 3.3 Standard ProSmith database workflow
-#### 3.3.1 Preparing the original ProSmith database
-#### 3.3.2 Creating train, validation, and test files
-#### 3.3.3 Generating protein and SMILES embeddings
-#### 3.3.4 Training the ProSmith transformer model
-#### 3.3.5 Training the Gradient Boosting model
-#### 3.3.6 Mapping predictions back to the test set
-#### 3.3.7 Expected output files
+Before starting the workflow, ensure that the following resources are available:
+
+- The original ProSmith repository by Alexander Kroll.
+- The corresponding dataset downloaded from Zenodo.
+- A configured Python environment using Micromamba.
+- Access to the SURF supercomputer.
+
+Clone the original ProSmith repository and download the accompanying dataset before continuing with the workflow.
+
+
+## 3.3 Standard ProSmith database workflow
+
+### 3.3.1 Preparing the original ProSmith database
+
+Navigate to the original ProSmith GitHub repository:
+
+```text
+https://github.com/AlexanderKroll/ProSmith
+```
+
+Clone the repository and download the associated dataset from Zenodo.
+
+If working on the SURF supercomputer, open the JupyterLab interface and clone the repository using the **Clone a Repository** option. Upload the downloaded ZIP archive containing the dataset into the ProSmith directory.
+
+Extract the dataset using:
+
+```bash
+unzip <dataset_name>.zip
+```
+
+After extraction, rename the generated folder `data 2` to:
+
+```text
+data
+```
+
+The repository structure should resemble the following:
+
+```text
+├── code
+├── data
+├── LICENSE.md
+└── README.md
+```
+
+Next, create a new Jupyter notebook by selecting:
+
+```text
+Notebook → Python 3 (ipykernel)
+```
+
+Install Micromamba by executing the following commands one at a time:
+
+```bash
+wget https://github.com/mamba-org/micromamba-releases/releases/download/2.1.0-0/micromamba-linux-64
+chmod +x micromamba-linux-64
+mkdir -p ~/bin
+mv micromamba-linux-64 ~/bin/micromamba
+echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+~/bin/micromamba --version
+```
+
+Create the ProSmith environment:
+
+```bash
+~/bin/micromamba env create -f environment.yml
+```
+
+When prompted, type `Y` and execute:
+
+```bash
+eval "$(micromamba shell hook --shell bash)"
+micromamba activate prosmith
+pip install -r requirements.txt
+micromamba install "mkl=2024.0" -c conda-forge
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+```
+
+For subsequent sessions, reactivate the environment using:
+
+```bash
+eval "$(micromamba shell hook --shell bash)"
+micromamba activate prosmith
+```
+
+### 3.3.2 Creating train, validation, and test files
+
+The original ProSmith repository already contains predefined training, validation, and test datasets.
+
+No modifications to these datasets are required when reproducing the baseline model. Ensure that the following files are present:
+
+```text
+data/training_data/ESP/train_val/
+
+├── ESP_train_df.csv
+├── ESP_val_df.csv
+└── ESP_test_df.csv
+```
+
+These datasets are used throughout the remainder of the baseline training workflow.
+
+
+### 3.3.3 Generating protein and SMILES embeddings
+
+Before training the ProSmith model, embeddings must be generated for all protein sequences and substrate SMILES strings contained in the training and validation datasets.
+
+Execute the preprocessing pipeline:
+
+```bash
+python code/preprocessing/preprocessing.py \
+  --train_val_path data/training_data/ESP/train_val \
+  --outpath data/training_data/ESP/embeddings \
+  --smiles_emb_no 2000 \
+  --prot_emb_no 2000
+```
+
+The preprocessing pipeline performs the following tasks:
+
+- Reads the training and validation datasets.
+- Generates ESM-1b embeddings for all protein sequences.
+- Generates ChemBERTa2 embeddings for all SMILES strings.
+- Stores the generated embeddings in separate Protein and SMILES directories.
+
+The generated embeddings are stored in:
+
+```text
+data/training_data/ESP/embeddings/
+```
+
+### 3.3.4 Training the ProSmith transformer model
+
+Once all embeddings have been generated, the ProSmith transformer model can be trained using the original enzyme–substrate database.
+
+Execute the following command:
+
+```bash
+python code/training/training.py \
+    --train_dir data/training_data/ESP/train_val/ESP_train_df.csv \
+    --val_dir data/training_data/ESP/train_val/ESP_val_df.csv \
+    --save_model_path data/training_data/ESP/saved_model \
+    --embed_path data/training_data/ESP/embeddings \
+    --pretrained_model data/training_data/BindingDB/saved_model/pretraining_IC50_6gpus_bs144_1.5e-05_layers6.txt.pkl \
+    --learning_rate 1e-5 \
+    --num_hidden_layers 6 \
+    --batch_size 24 \
+    --binary_task True \
+    --log_name ESP \
+    --num_train_epochs 100
+```
+
+Depending on the available computational resources, training may require several hours. During training, model checkpoints and log files are automatically generated.
+
+The trained model is saved in:
+
+```text
+data/training_data/ESP/saved_model/
+```
+
+### 3.3.5 Training the Gradient Boosting model
+
+Following transformer training, train the Gradient Boosting classifier using the generated embeddings together with the transformer predictions.
+
+Before executing the training script, modify the following line in `training_GB.py`:
+
+```python
+gpu = 0
+```
+
+Replace it with:
+
+```python
+gpu = device.index
+```
+
+Next, execute:
+
+```bash
+python code/training/training_GB.py \
+    --train_dir data/training_data/ESP/train_val/ESP_train_df.csv \
+    --val_dir data/training_data/ESP/train_val/ESP_val_df.csv \
+    --test_dir data/training_data/ESP/train_val/ESP_test_df.csv \
+    --pretrained_model data/training_data/ESP/saved_model/ESP_2gpus_bs48_1e-05_layers6.txt.pkl \
+    --embed_path data/training_data/ESP/embeddings \
+    --save_pred_path data/training_data/ESP/saved_predictions \
+    --num_hidden_layers 6 \
+    --num_iter 500 \
+    --log_name ESP \
+    --binary_task True
+```
+
+After successful execution, all prediction files are stored in:
+
+```text
+data/training_data/ESP/saved_predictions/
+```
+
+### 3.3.6 Mapping predictions back to the test set
+
+The final step consists of mapping the generated predictions back to the original test dataset.
+
+Execute the following script:
+
+```bash
+python - <<'PY'
+import numpy as np
+import pandas as pd
+from os.path import join
+
+pred_dir = "data/training_data/ESP/saved_predictions"
+test_path = "data/training_data/ESP/train_val/ESP_test_df.csv"
+out_path = join(pred_dir, "ESP_test_with_predictions.csv")
+
+y_pred = np.load(join(pred_dir, "y_test_pred.npy"))
+y_pred_ind = np.load(join(pred_dir, "test_indices.npy"))
+test_df = pd.read_csv(test_path, sep=None, engine="python")
+
+test_df["y_pred"] = np.nan
+for k, ind in enumerate(y_pred_ind):
+    test_df.loc[ind, "y_pred"] = y_pred[k]
+
+test_df.to_csv(out_path, index=False)
+print("Saved:", out_path)
+print("Predictions mapped:", test_df["y_pred"].notna().sum())
+print("Total rows:", len(test_df))
+PY
+```
+
+The script performs the following operations:
+
+- Loads the predicted interaction scores.
+- Retrieves the original test dataset.
+- Maps each prediction to its corresponding sample.
+- Creates a new dataset containing both the original data and the model predictions.
+
+The resulting file is saved as:
+
+```text
+data/training_data/ESP/saved_predictions/ESP_test_with_predictions.csv
+```
+
+This file enables direct comparison between the original dataset and the predicted interaction labels.
+
+### 3.3.7 Expected output files
+
+After successfully completing the baseline workflow, the repository should contain the following output:
+
+```text
+data/
+└── training_data/
+    └── ESP/
+        ├── embeddings/
+        │   ├── Protein/
+        │   └── SMILES/
+        │
+        ├── saved_model/
+        │   └── best_model.pkl
+        │
+        ├── saved_predictions/
+        │   ├── y_test_pred.npy
+        │   ├── test_indices.npy
+        │   └── ESP_test_with_predictions.csv
+        │
+        └── train_val/
+            ├── ESP_train_df.csv
+            ├── ESP_val_df.csv
+            └── ESP_test_df.csv
+```
+
+Successful generation of these files indicates that the original ProSmith workflow has been completed successfully and that the baseline model is ready for downstream evaluation and comparison with the optimized workflows described in subsequent chapters.
 
 ## 3.4 Expanded ProSmith database workflow
 
