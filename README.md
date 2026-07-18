@@ -1247,3 +1247,11 @@ FusionESP_server_1280/
 ```
 
 The `report_full.xlsx` file contains the predicted interaction class together with the corresponding confidence score for each enzyme–substrate pair. This file serves as the primary output of the FusionESP prediction workflow.
+
+# Acknowledgement
+We would like to express our sincere gratitude to Max Achterweust for his guidance, support, and expertise throughout this project. 
+
+From introducing us to the ProSmith workflow to helping us navigate Python, machine learning, and the SURF supercomputer, your knowledge and willingness to answer our many questions have been invaluable. Your support enabled us not only to succesfully reproduce the original ProSmith pipeline, but also to extend and improve it by training new models with an expanded enzym-substrate database. Whenever we encountered technical challenges, your patience and enthusiasm helped us move forward. 
+
+This prject has provided us with invaluable experience at the intersection of artificial intelligence and biochemistry, while also giving us the opporunity to contribute to ongoing research. It has been a pleasure working with you, and we are truly grateful for the time, encouragement, and dedication you invested in our group. Thank you for making this project such an enjoyable, educational, and rewarding experience!
+
