@@ -756,6 +756,11 @@ PY
 
 This script removes test samples without valid protein or SMILES embeddings and creates an embedding-compatible test dataset.
 
+## *Next Steps*
+The ProSmith model has now been successfully trained using the reproduced baseline pipeline. The next step is to improve the predictive performance by training the Gradient boosting ensemble using the generated embeddings and model predictions. This procedure is discribed in the following section and reproduces the original ProSmith workflow, including the originial data splitting strategy. 
+
+After completing the training in step 3.4.5, you can continue with Chapter 4, where the entire pipeline is repeated using a leakage-free gradient boosting to obtain a more robust and unbiased evaluation of the model.
+
 Next, train the Gradient Boosting classifier using:
 
 ```bash
