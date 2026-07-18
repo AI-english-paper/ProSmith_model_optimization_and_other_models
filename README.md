@@ -93,7 +93,7 @@ Whenever you start a new session on the SURF supercomputer, reactivate the envir
 
 `micromamba activate prosmith`
 
-# Kan dit weg pelo?
+## Kan dit weg pelo? (kopjes tot 3)
 ### 2.5 Creating or activating the environment
 ### 2.2 Installing dependencies
 ### 2.3 Navigating to the project repositories
