@@ -1,6 +1,5 @@
 # ProSmith_model_optimization_and_other_models
 
-*upload juiste files
 ## REQUIREMENTS
 ```text
 Before running this workflow, make sure the following requirements are available:
