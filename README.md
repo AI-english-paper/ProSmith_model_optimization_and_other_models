@@ -145,7 +145,6 @@ Whenever you start a new session on the SURF supercomputer, reactivate the envir
 
 The FusionESP predictor is designed to predict enzyme–substrate interactions using the pretrained **FusionESP** model. The original FusionESP model was trained on datasets generated with the ProSmith framework developed by Alexander Kroll. This workflow enables users to perform predictions on custom peptide and substrate datasets without retraining the underlying model.
 
----
 
 ## 5.2 Required FusionESP files and folders
 
@@ -185,9 +184,8 @@ After successful initialization, the following message should appear:
 * Running on http://127.0.0.1:5000
 ```
 
-> **Important:** Keep this terminal open while performing predictions. Closing the server will interrupt the prediction process.
+**Important:** Keep this terminal open while performing predictions. Closing the server will interrupt the prediction process.
 
----
 
 ## 5.3 Preparing FusionESP input data
 
@@ -212,7 +210,6 @@ data_predictions/
 └── input_file.xlsx
 ```
 
----
 
 ## 5.4 Running the FusionESP predictor
 
@@ -242,7 +239,6 @@ output_input_file/
 └── report_full.xlsx
 ```
 
----
 
 ## 5.5 Evaluating FusionESP prediction output
 
@@ -274,7 +270,6 @@ ROC-AUC
 
 These metrics provide a quantitative assessment of the predictive performance of the FusionESP model on the supplied dataset.
 
----
 
 ## 5.6 Expected output files
 
