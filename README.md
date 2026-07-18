@@ -139,11 +139,154 @@ Whenever you start a new session on the SURF supercomputer, reactivate the envir
 ### 4.11 Mapping no-leakage predictions back to the test set
 ### 4.12 Expected output files
 
-## 5. FusionESP predictor workflow
+# 5. FusionESP predictor workflow
 
-### 5.1 Purpose of the FusionESP predictor
-### 5.2 Required FusionESP files and folders
-### 5.3 Preparing FusionESP input data
-### 5.4 Running the FusionESP predictor
-### 5.5 Evaluating FusionESP prediction output
-### 5.6 Expected output files
+## 5.1 Purpose of the FusionESP predictor
+
+The FusionESP predictor is designed to predict enzyme–substrate interactions using the pretrained **FusionESP** model. The original FusionESP model was trained on datasets generated with the ProSmith framework developed by Alexander Kroll. This workflow enables users to perform predictions on custom peptide and substrate datasets without retraining the underlying model.
+
+---
+
+## 5.2 Required FusionESP files and folders
+
+Before running the predictor, clone the original FusionESP repository:
+
+```bash
+git clone https://github.com/dzjxzyd/FusionESP.git
+```
+
+Navigate to the project directory:
+
+```bash
+cd FusionESP_server_1280
+```
+
+Activate the dedicated Python environment:
+
+```bash
+source fusionesp_env/bin/activate
+```
+
+If the environment has been activated successfully, the terminal prompt will display:
+
+```bash
+(fusionesp_env)
+```
+
+Start the FusionESP prediction server:
+
+```bash
+python app.py
+```
+
+After successful initialization, the following message should appear:
+
+```text
+* Running on http://127.0.0.1:5000
+```
+
+> **Important:** Keep this terminal open while performing predictions. Closing the server will interrupt the prediction process.
+
+---
+
+## 5.3 Preparing FusionESP input data
+
+Create a directory for the prediction input files:
+
+```bash
+mkdir data_predictions
+```
+
+Place the input Excel file inside this directory.
+
+The input file must meet the following requirements:
+
+- The file must be in `.xlsx` format.
+- Column names must match the input format required by FusionESP.
+- Protein sequences and substrate SMILES should be formatted according to the original FusionESP specifications.
+
+Example directory structure:
+
+```text
+data_predictions/
+└── input_file.xlsx
+```
+
+---
+
+## 5.4 Running the FusionESP predictor
+
+Open a **new terminal** and activate the FusionESP environment again:
+
+```bash
+cd FusionESP_server_1280
+source fusionesp_env/bin/activate
+```
+
+Execute the prediction using the following command.
+
+Replace `input_file.xlsx` with the name of your input file.
+
+```bash
+curl -F "Peptide_sequences=@data_predictions/input_file.xlsx" \
+http://127.0.0.1:5000/pred_with_file \
+-o output_input_file/report_full.xlsx
+```
+
+Upon successful completion, FusionESP automatically generates an output directory containing the prediction results.
+
+Example:
+
+```text
+output_input_file/
+└── report_full.xlsx
+```
+
+---
+
+## 5.5 Evaluating FusionESP prediction output
+
+Prediction performance can be evaluated using several commonly applied binary classification metrics:
+
+- Accuracy
+- Precision
+- Matthews Correlation Coefficient (MCC)
+- Receiver Operating Characteristic Area Under the Curve (ROC-AUC)
+
+The following script compares the FusionESP predictions with the ground-truth labels and calculates the corresponding evaluation metrics.
+
+Replace `input_file` with the appropriate filename.
+
+```bash
+python -c "import pandas as pd, numpy as np; orig=pd.read_excel('data_predictions/input_file_sorted_longest_first.xlsx'); pred=pd.read_excel('output_input_file/report_full_sorted.xlsx'); df=pred.merge(orig[['Protein sequence','SMILES','output']], on=['Protein sequence','SMILES'], how='left'); df=df.dropna(subset=['output']); y_true=df['output'].astype(int).to_numpy(); pos_score=df.apply(lambda r: r['confidence_score'] if r['interaction']=='interaction' else 1-r['confidence_score'], axis=1).astype(float).to_numpy(); y_pred=(pos_score>0.5).astype(int); TP=((y_true==1)&(y_pred==1)).sum(); TN=((y_true==0)&(y_pred==0)).sum(); FP=((y_true==0)&(y_pred==1)).sum(); FN=((y_true==1)&(y_pred==0)).sum(); acc=(TP+TN)/len(y_true); prec=TP/(TP+FP) if TP+FP else float('nan'); mcc_d=((TP+FP)*(TP+FN)*(TN+FP)*(TN+FN))**0.5; mcc=((TP*TN)-(FP*FN))/mcc_d if mcc_d else float('nan'); ranks=pd.Series(pos_score).rank(method='average').to_numpy(); n_pos=(y_true==1).sum(); n_neg=(y_true==0).sum(); auc=(ranks[y_true==1].sum()-n_pos*(n_pos+1)/2)/(n_pos*n_neg) if n_pos and n_neg else float('nan'); print('N:', len(y_true)); print('TP TN FP FN:', TP, TN, FP, FN); print('Accuracy:', acc); print('Precision:', prec); print('MCC:', mcc); print('ROC-AUC:', auc)"
+```
+
+The script reports:
+
+```text
+N: Number of evaluated predictions
+TP TN FP FN: Confusion matrix values
+Accuracy
+Precision
+MCC
+ROC-AUC
+```
+
+These metrics provide a quantitative assessment of the predictive performance of the FusionESP model on the supplied dataset.
+
+---
+
+## 5.6 Expected output files
+
+After completing the workflow, the following files and folders should be available:
+
+```text
+FusionESP_server_1280/
+├── data_predictions/
+│   └── input_file.xlsx
+│
+├── output_input_file/
+│   └── report_full.xlsx
+```
+
+The `report_full.xlsx` file contains the predicted interaction class together with the corresponding confidence score for each enzyme–substrate pair. This file serves as the primary output of the FusionESP prediction workflow.
