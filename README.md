@@ -11,6 +11,67 @@ Happy coding!
 
 Aurelia, Pedro, and Zeynep
 
+## Table of Contents
+
+```
+- [Requirements](#requirements)
+- [1. Project Overview](#1-project-overview)
+  - [1.1 Aim](#11-aim-of-this-repository)
+  - [1.2 Included Models](#12-models-included-in-this-repository)
+  - [1.3 Repository Structure](#13-repository-structure)
+
+- [2. Shared Environment Setup](#2-shared-environment-setup)
+  - [2.1 Prepare Files](#21-prepare-all-files)
+  - [2.2 SURF Supercomputer](#22-working-on-the-surf-supercomputer)
+  - [2.3 Create Notebook](#23-create-a-new-notebook)
+  - [2.4 Create Environment](#24-create-the-environment)
+
+- [3. ProSmith Workflow](#3-prosmith-workflow)
+  - [3.1 Purpose](#31-purpose)
+  - [3.2 Required Files](#32-required-prosmith-files-and-folders)
+  - [3.3 Baseline Workflow](#33-standard-prosmith-database-workflow)
+    - [3.3.1 Create Datasets](#331-creating-train-validation-and-test-files)
+    - [3.3.2 Generate Embeddings](#332-generating-protein-and-smiles-embeddings)
+    - [3.3.3 Train Transformer](#333-training-the-prosmith-transformer-model)
+    - [3.3.4 Train Gradient Boosting](#334-training-the-gradient-boosting-model)
+    - [3.3.5 Map Predictions](#335-mapping-predictions-back-to-the-test-set)
+    - [3.3.6 Expected Output](#336-expected-output-files)
+  - [3.4 Expanded Database Workflow](#34-expanded-prosmith-database-workflow)
+    - [3.4.1 Expand Database](#341-expanding-the-prosmith-database)
+    - [3.4.2 Preprocess Data](#342-preprocessing-the-expanded-database)
+    - [3.4.3 Generate Embeddings](#343-generating-protein-and-smiles-embeddings)
+    - [3.4.4 Train Transformer](#344-training-the-prosmith-transformer-model)
+    - [3.4.5 Prepare Gradient Boosting](#345-preparing-for-training-the-gradient-boosting-model)
+    - [3.4.6 Train Gradient Boosting](#346-preparing-for-training-the-gradient-boosting-model)
+    - [3.4.7 Map Predictions](#347-mapping-predictions-back-to-the-test-set)
+    - [3.4.8 Expected Output](#348-expected-output-files)
+
+- [4. No-Leakage ProSmith Workflow](#4-no-leakage-prosmith-workflow)
+  - [4.1 Purpose](#41-purpose-of-the-no-leakage-workflow)
+  - [4.2 Reused Steps](#42-reused-steps-from-the-standard-prosmith-workflow)
+  - [4.3 Required Files](#43-required-no-leakage-files-and-folders)
+  - [4.4 Data Leakage Fix](#44-applying-the-data-leakage-fix-in-training_gbpy)
+    - [4.4.1 First Gradient Boosting Model](#441-modify-the-first-gradient-boosting-model)
+    - [4.4.2 Second Gradient Boosting Model](#442-modify-the-second-gradient-boosting-model)
+    - [4.4.3 Third Gradient Boosting Model](#443-modify-the-third-gradient-boosting-model)
+  - [4.5 Verify Changes](#45-checking-that-the-no-leakage-correction-is-applied-correctly)
+  - [4.6 Run Workflow](#46-running-the-no-leakage-gradient-boosting-workflow)
+  - [4.7 Check Output](#47-checking-the-no-leakage-output-files)
+  - [4.8 Map Predictions](#48-mapping-no-leakage-predictions-back-to-the-test-set)
+  - [4.9 Expected Output](#49-expected-output-files)
+
+- [5. FusionESP Workflow](#5-fusionesp-predictor-workflow)
+  - [5.1 Purpose](#51-purpose-of-the-fusionesp-predictor)
+  - [5.2 Setup](#52-required-fusionesp-files-and-folders)
+  - [5.3 Prepare Input](#53-preparing-fusionesp-input-data)
+  - [5.4 Run Predictions](#54-running-the-fusionesp-predictor)
+  - [5.5 Evaluate Results](#55-evaluating-fusionesp-prediction-output)
+  - [5.6 Expected Output](#56-expected-output-files)
+
+- [Acknowledgements]
+```
+
+
 ## REQUIREMENTS
 ```text
 Before running this workflow, make sure the following requirements are available:
