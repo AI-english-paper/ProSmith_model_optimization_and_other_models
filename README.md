@@ -70,7 +70,8 @@ Aurelia, Pedro, and Zeynep
   - [5.4 Run Predictions](#54-running-the-fusionesp-predictor)
   - [5.5 Evaluate Results](#55-evaluating-fusionesp-prediction-output)
   - [5.6 Expected Output](#56-expected-output-files)
-
+  
+- [License and Attribution](#license-and-attribution)
 - [Acknowledgements](#acknowledgement)
 
 
@@ -1245,6 +1246,17 @@ FusionESP_server_1280/
 ```
 
 The `report_full.xlsx` file contains the predicted interaction class together with the corresponding confidence score for each enzyme–substrate pair. This file serves as the primary output of the FusionESP prediction workflow.
+
+## License and Attribution
+
+This repository contains workflows based on and adapted from the original ProSmith repository by Alexander Kroll:
+
+https://github.com/AlexanderKroll/ProSmith
+
+The original ProSmith software is distributed under the MIT License.
+Copyright (c) 2023 AlexanderKroll.
+
+The original MIT License and copyright notice apply to the portions of the software derived from the ProSmith repository.
 
 # Acknowledgement
 We would like to express our sincere gratitude to Max Achterweust for his guidance, support, and expertise throughout this project. 
