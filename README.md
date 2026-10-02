@@ -13,65 +13,62 @@ Aurelia, Pedro, and Zeynep
 
 ## Table of Contents
 
-```
-- Requirements
+- [Requirements](#requirements)
 
-- 1. Project Overview
-  - 1.1 Aim
-  - 1.2 Included Models
-  - 1.3 Repository Structure
+- [1. Project Overview](#1-project-overview)
+  - [1.1 Aim](#11-aim)
+  - [1.2 Included Models](#12-included-models)
+  - [1.3 Repository Structure](#13-repository-structure)
 
-- 2. Shared Environment Setup
-  - 2.1 Prepare Files
-  - 2.2 SURF Supercomputer
-  - 2.3 Create Notebook
-  - 2.4 Create Environment
+- [2. Shared Environment Setup](#2-shared-environment-setup)
+  - [2.1 Prepare Files](#21-prepare-files)
+  - [2.2 SURF Supercomputer](#22-surf-supercomputer)
+  - [2.3 Create Notebook](#23-create-notebook)
+  - [2.4 Create Environment](#24-create-environment)
 
-- 3. ProSmith Workflow
-  - 3.1 Purpose
-  - 3.2 Required Files
-  - 3.3 Baseline Workflow
-    - 3.3.1 Create Datasets
-    - 3.3.2 Generate Embeddings
-    - 3.3.3 Train Transformer
-    - 3.3.4 Train Gradient Boosting
-    - 3.3.5 Map Predictions
-    - 3.3.6 Expected Output
-  - 3.4 Expanded Database Workflow
-    - 3.4.1 Expand Database
-    - 3.4.2 Preprocess Data
-    - 3.4.3 Generate Embeddings
-    - 3.4.4 Train Transformer
-    - 3.4.5 Prepare Gradient Boosting
-*For No-Leakage skip to Chapter 4*
-    - 3.4.6 Train Gradient Boosting
-    - 3.4.7 Map Predictions
-    - 3.4.8 Expected Output
+- [3. ProSmith Workflow](#3-prosmith-workflow)
+  - [3.1 Purpose](#31-purpose)
+  - [3.2 Required Files](#32-required-files)
+  - [3.3 Baseline Workflow](#33-baseline-workflow)
+    - [3.3.1 Create Datasets](#331-create-datasets)
+    - [3.3.2 Generate Embeddings](#332-generate-embeddings)
+    - [3.3.3 Train Transformer](#333-train-transformer)
+    - [3.3.4 Train Gradient Boosting](#334-train-gradient-boosting)
+    - [3.3.5 Map Predictions](#335-map-predictions)
+    - [3.3.6 Expected Output](#336-expected-output)
+  - [3.4 Expanded Database Workflow](#34-expanded-database-workflow)
+    - [3.4.1 Expand Database](#341-expand-database)
+    - [3.4.2 Preprocess Data](#342-preprocess-data)
+    - [3.4.3 Generate Embeddings](#343-generate-embeddings)
+    - [3.4.4 Train Transformer](#344-train-transformer)
+    - [3.4.5 Prepare Gradient Boosting](#345-prepare-gradient-boosting)
+    - [3.4.6 Train Gradient Boosting](#346-train-gradient-boosting)
+    - [3.4.7 Map Predictions](#347-map-predictions)
+    - [3.4.8 Expected Output](#348-expected-output)
 
-- 4. No-Leakage ProSmith Workflow
-  - 4.1 Purpose
-  - 4.2 Reused Steps
-  - 4.3 Required Files
-  - 4.4 Data Leakage Fix
-    - 4.4.1 First Gradient Boosting Model
-    - 4.4.2 Second Gradient Boosting Model
-    - 4.4.3 Third Gradient Boosting Model
-  - 4.5 Verify Changes
-  - 4.6 Run Workflow
-  - 4.7 Check Output
-  - 4.8 Map Predictions
-  - 4.9 Expected Output
+- [4. No-Leakage ProSmith Workflow](#4-no-leakage-prosmith-workflow)
+  - [4.1 Purpose](#41-purpose)
+  - [4.2 Reused Steps](#42-reused-steps)
+  - [4.3 Required Files](#43-required-files)
+  - [4.4 Data Leakage Fix](#44-data-leakage-fix)
+    - [4.4.1 First Gradient Boosting Model](#441-first-gradient-boosting-model)
+    - [4.4.2 Second Gradient Boosting Model](#442-second-gradient-boosting-model)
+    - [4.4.3 Third Gradient Boosting Model](#443-third-gradient-boosting-model)
+  - [4.5 Verify Changes](#45-verify-changes)
+  - [4.6 Run Workflow](#46-run-workflow)
+  - [4.7 Check Output](#47-check-output)
+  - [4.8 Map Predictions](#48-map-predictions)
+  - [4.9 Expected Output](#49-expected-output)
 
-- 5. FusionESP Workflow
-  - 5.1 Purpose
-  - 5.2 Setup
-  - 5.3 Prepare Input
-  - 5.4 Run Predictions
-  - 5.5 Evaluate Results
-  - 5.6 Expected Output
+- [5. FusionESP Workflow](#5-fusionesp-workflow)
+  - [5.1 Purpose](#51-purpose)
+  - [5.2 Setup](#52-setup)
+  - [5.3 Prepare Input](#53-prepare-input)
+  - [5.4 Run Predictions](#54-run-predictions)
+  - [5.5 Evaluate Results](#55-evaluate-results)
+  - [5.6 Expected Output](#56-expected-output)
 
-- Acknowledgements
-```
+- [Acknowledgements](#acknowledgements)
 
 
 ## REQUIREMENTS
