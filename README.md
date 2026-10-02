@@ -42,6 +42,7 @@ Aurelia, Pedro, and Zeynep
     - [3.4.3 Generate Embeddings](#343-generating-protein-and-smiles-embeddings)
     - [3.4.4 Train Transformer](#344-training-the-prosmith-transformer-model)
     - [3.4.5 Prepare Gradient Boosting](#345-preparing-for-training-the-gradient-boosting-model)
+  *For [No-Leakage, skip to Chapter 4](#4-no-leakage-prosmith-workflow)*
     - [3.4.6 Train Gradient Boosting](#346-preparing-for-training-the-gradient-boosting-model)
     - [3.4.7 Map Predictions](#347-mapping-predictions-back-to-the-test-set)
     - [3.4.8 Expected Output](#348-expected-output-files)
